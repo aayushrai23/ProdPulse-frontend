@@ -1,0 +1,10 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Frontend
+node_modules/
+
+# OS / Editor
+.DS_Store
