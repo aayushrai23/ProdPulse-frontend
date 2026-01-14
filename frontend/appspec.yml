@@ -2,19 +2,22 @@ version: 0.0
 os: linux
 
 files:
-  - source: frontend/build/
+  - source: build/
     destination: /var/www/html
     overwrite: yes
 
 hooks:
   BeforeInstall:
-    - location: frontend/scripts/before_install.sh
+    - location: scripts/before_install.sh
+      timeout: 300
       runas: root
 
   AfterInstall:
-    - location: frontend/scripts/after_install.sh
+    - location: scripts/after_install.sh
+      timeout: 300
       runas: root
 
   ApplicationStart:
-    - location: frontend/scripts/start_app.sh
+    - location: scripts/start_app.sh
+      timeout: 300
       runas: root

@@ -5,8 +5,7 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo "Moving to frontend directory"
-      - cd frontend
+      - echo "Installing frontend dependencies"
       - npm install || true
 
   build:
@@ -16,8 +15,8 @@ phases:
       - cp index.html build/
 
 artifacts:
+  base-directory: frontend
   files:
-    - frontend/appspec.yml
-    - frontend/scripts/**/*
-    - frontend/build/**/*
-
+    - appspec.yml
+    - build/**/*
+    - scripts/**/*
