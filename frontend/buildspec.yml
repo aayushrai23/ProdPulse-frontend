@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "Moving to frontend directory"
+      - cd frontend
+      - npm install || true
+
+  build:
+    commands:
+      - echo "Building frontend"
+      - mkdir -p build
+      - cp index.html build/
+
+artifacts:
+  files:
+    - frontend/appspec.yml
+    - frontend/scripts/**/*
+    - frontend/build/**/*
+
