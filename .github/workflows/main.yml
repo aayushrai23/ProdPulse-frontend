@@ -1,16 +1,15 @@
-name: Deploy to ECS (EC2)
+name: Deploy Frontend to ECS (EC2)
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
 
 env:
   AWS_REGION: ap-south-1
   ECR_REPOSITORY: prodfront
   ECS_CLUSTER: prodpulse-ec2-cluster01
   ECS_SERVICE: prodpulse-task-defination-service-1k17qvn8
-  TASK_DEFINITION_FAMILY: prodpulse-task-defination
+  ECS_TASK_DEFINITION: prodpulse-task-defination
 
 jobs:
   deploy:
@@ -31,46 +30,19 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build, tag, and push Docker image
+    - name: Build, tag, and push image
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -f frontend/Dockerfile \
+          -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG frontend
+
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "IMAGE_URI=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_ENV
-
-    - name: Fetch current task definition
-      run: |
-        aws ecs describe-task-definition \
-          --task-definition $TASK_DEFINITION_FAMILY \
-          --query taskDefinition \
-          > task-def.json
-
-    - name: Render new task definition
-      run: |
-        jq '
-          .containerDefinitions[0].image = env.IMAGE_URI
-          | del(
-              .taskDefinitionArn,
-              .revision,
-              .status,
-              .requiresAttributes,
-              .compatibilities,
-              .registeredAt,
-              .registeredBy
-            )
-        ' task-def.json > new-task-def.json
-
-    - name: Register new task definition
-      run: |
-        aws ecs register-task-definition \
-          --cli-input-json file://new-task-def.json
 
     - name: Update ECS service
       run: |
         aws ecs update-service \
           --cluster $ECS_CLUSTER \
           --service $ECS_SERVICE \
-          --task-definition $TASK_DEFINITION_FAMILY \
           --force-new-deployment
